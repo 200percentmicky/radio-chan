@@ -1,0 +1,31 @@
+# Secret files. 🤫
+.env
+.vscode
+.vs
+.__pycache__
+.yarn
+.yarnrc.yml
+
+# Cookies
+cookies.json
+
+# Auto-generated files and directories.
+data
+info
+prefixes.db
+console.log
+
+# Directories
+node_modules
+chadtube
+rewrite
+src_old
+
+# Old configuration files.
+# I haven't removed them yet...
+src/config.json
+src/aliases.json
+settings.json
+
+# Vault
+vault

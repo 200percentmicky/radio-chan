@@ -1,0 +1,15 @@
+name: lint
+on:
+  push:
+    branches:
+      - main
+      - develop
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install ESLint
+      run: npm install -D eslint
+    - name: Run ESLint
+      run: npx eslint . --ext .js,.jsx,.ts,.tsx
