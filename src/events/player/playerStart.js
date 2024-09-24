@@ -30,7 +30,7 @@ module.exports = class ListenerPlayerStart extends Listener {
         // The event is being called way too quickly for metadata to be parsed correctly
         // when a player is created. Using a setTimeout() here will allow for metadata to be parsed correctly.
         setTimeout(async () => {
-            const channel = queue.metadata?.textChannel; // TextChannel
+            const channel = track.textChannel; // TextChannel
             const guild = queue.guild; // Guild
             const member = track.member; // GuildMember
             const vc = member.voice.channel ?? guild.members.me.voice.channel; // VoiceChannel
