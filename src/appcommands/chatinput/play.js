@@ -256,9 +256,6 @@ class CommandPlay extends SlashCommand {
                 });
                 */
                 player.play(vc, requested, {
-                    metadata: {
-                        textChannel: channel
-                    },
                     nodeOptions: {
                         volume: parseInt(settings.defaultVolume),
                         leaveOnStop: settings.leaveOnStop,
@@ -284,6 +281,7 @@ class CommandPlay extends SlashCommand {
                         Object.assign(song.track, {
                             ctx,
                             member: _member,
+                            textChannel: channel,
                             file: isFile,
                             radioStation,
                             fileMetadata,
