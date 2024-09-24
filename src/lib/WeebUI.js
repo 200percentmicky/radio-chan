@@ -17,6 +17,7 @@
 /* eslint-disable no-multi-spaces */
 /* eslint-disable no-unused-vars */
 
+const { stripIndents } = require('common-tags');
 const {
     Message,
     ActionRowBuilder,
@@ -27,7 +28,8 @@ const {
     PermissionsBitField,
     ChatInputCommandInteraction,
     InteractionResponse,
-    EmbedBuilder
+    EmbedBuilder,
+    User
 } = require('discord.js');
 const { Queue } = require('distube');
 const { CommandContext, Member } = require('slash-create');
@@ -47,6 +49,10 @@ let baseEmbed = {};
 const embedUI = (color, emoji, author, title, desc, footer) => {
     baseEmbed = new EmbedBuilder()
         .setColor(color)
+        .setAuthor({
+            name: author.user.tag,
+            url: author.user.avatarURL()
+        })
         .setDescription(`${emoji} ${desc}`);
 
     if (title) {
@@ -69,12 +75,12 @@ const embedUI = (color, emoji, author, title, desc, footer) => {
  * Should be used if the bot doesn't have permission to embed links.
  *
  * @param {EmojiResolvable} emoji The emoji to use in the message.
+ * @param {GuildMember|Member} author The author of the embed. Usually the member of a guild.
  * @param {string} title The title of the message.
- * @param {GuildMember} author The author of the embed. Usually the member of a guild.
  * @param {string} desc The description of the message.
  * @returns The constructed message.
  */
-const stringUI = (emoji, title, desc) => {
+const stringUI = (emoji, author, title, desc) => {
     let msgString = `${emoji} ${desc}`;
     if (title) msgString = `${emoji} **${title}**\n${desc}`;
     return msgString;
@@ -110,7 +116,6 @@ class WeebUI {
      * @returns {(Message|CommandContext|InteractionResponse)} The message to send in the channel.
      */
     static reply (msg, type, description, title, footer, ephemeral, buttons, mention) {
-        /* The emoji of the embed */
         let embedEmoji = {
             ok: process.env.EMOJI_OK ?? ':white_check_mark:',
             warn: process.env.EMOJI_WARN ?? ':warning:',
@@ -119,7 +124,7 @@ class WeebUI {
             no: process.env.EMOJI_NO ?? ':no_entry_sign:'
         };
 
-        const embed = embedUI(embedColor[type], embedEmoji[type], title || null, description || null, footer || null);
+        const embed = embedUI(embedColor[type], embedEmoji[type], msg.member, title || null, description || null, footer || null);
         if (msg instanceof CommandContext) {
             return msg.send({
                 embeds: [embed],
@@ -149,7 +154,7 @@ class WeebUI {
 
             if (!embedPerms) {
                 return msg.reply({
-                    content: stringUI(embedEmoji[type], title || null, description || null),
+                    content: stringUI(embedEmoji[type], msg.member, title || null, description || null),
                     components: buttons || [],
                     ephemeral: ephemeral ?? false,
                     allowedMentions: {
@@ -170,26 +175,6 @@ class WeebUI {
     }
 
     /**
-     * Returns the overall usage of a message based command if no arguments were provided.
-     *
-     * @example <ChadUI>.usage(message, 'play <url|search>');
-     * @param {Message} msg A MessageResolvable | `Discord.Message`
-     * @param {string} syntax The usage of the command
-     * @returns {Message} The embed containg the usage of the command.
-     */
-    static usage (msg, syntax) {
-        const guildPrefix = msg.channel.client.settings.get(msg.guild.id, 'prefix') ?? process.env.PREFIX;
-        let usagePrompt;
-        if (!msg.channel.permissionsFor(msg.channel.client.user.id).has(PermissionsBitField.Flags.EmbedLinks)) {
-            usagePrompt = stringUI(process.env.EMOJI_INFO, 'Usage', `\`\`\`${guildPrefix}${syntax}\`\`\``);
-            return msg.reply({ content: usagePrompt });
-        } else {
-            usagePrompt = embedUI(process.env.COLOR_INFO, process.env.EMOJI_INFO, 'Usage', `\`\`\`${guildPrefix}${syntax}\`\`\``);
-            return msg.reply({ embeds: [usagePrompt] });
-        }
-    }
-
-    /**
      * Replies with a custom embed with any emoji or color of your choosing.
      * If the bot doesn't have the permission to **Embed Links**, you can only apply a custom emoji.
      *
@@ -205,7 +190,8 @@ class WeebUI {
      * @returns {(Message|CommandContext|InteractionResponse)} The message to reply to the user.
      */
     static custom (msg, emoji, color, description, title, footer, ephemeral, buttons, mention) {
-        const embed = embedUI(color, emoji || null, title || null, description || null, footer || null);
+        const embed = embedUI(color, emoji || null, msg.member, title || null, description || null, footer || null);
+
         if (msg instanceof CommandContext) {
             return msg.send({
                 embeds: [embed],
@@ -255,8 +241,8 @@ class WeebUI {
             200: ':loud_sound::zap:',
             250: ':loud_sound::zap::warning:'
         };
-        if (queue.volume >= 250) return ':loud_sound::sob::ok_hand:';
-        return volumeIcon[Math.ceil(queue.volume / 50) * 50];
+        if (queue.node.volume >= 250) return ':loud_sound::sob::ok_hand:';
+        return volumeIcon[Math.ceil(queue.node.volume / 50) * 50];
     }
 
     /**
@@ -324,7 +310,9 @@ class WeebUI {
         const errorChannel = client.channels.cache.get(process.env.BUG_CHANNEL);
         if (!errorChannel) return;
 
-        return errorChannel.send({ content: `**${title}**${command ? ` in \`${command}\`` : ''}\n\`\`\`js\n${error.stack}\`\`\`` });
+        const errorContent = `${process.env.EMOJI_WARN || ':warning:'} An error has occured in the application. Please report this to the developer.\n\n**${title}**${command ? ` in \`${command}\`` : ''}\n\`\`\`js\n${error.stack ?? 'N/A'}\`\`\``;
+
+        return errorChannel.send({ content: `${errorContent}` });
     }
 }
 
