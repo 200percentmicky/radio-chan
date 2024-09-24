@@ -26,6 +26,6 @@ module.exports = class ListenerQueueDelete extends Listener {
     }
 
     async exec (queue) {
-        await queue.textChannel.client.utils.setVcStatus(queue.channel, null);
+        await queue.channel.client.utils.setVcStatus(queue.channel, null);
     }
 };
