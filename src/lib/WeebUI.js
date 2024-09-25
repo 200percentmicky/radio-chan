@@ -17,7 +17,6 @@
 /* eslint-disable no-multi-spaces */
 /* eslint-disable no-unused-vars */
 
-const { stripIndents } = require('common-tags');
 const {
     Message,
     ActionRowBuilder,
@@ -40,19 +39,14 @@ let baseEmbed = {};
  *
  * @param {ColorResolvable} color The color of the embed.
  * @param {EmojiResolvable} emoji The emoji to add to the message.
- * @param {GuildMember|Member} author The author of the embed. Usually the member of a guild.
  * @param {string} title The title of the embed.
  * @param {string} desc The description of the embed.
  * @param {string} footer The footer of the embed.
  * @returns The object used to construct an embed.
  */
-const embedUI = (color, emoji, author, title, desc, footer) => {
+const embedUI = (color, emoji, title, desc, footer) => {
     baseEmbed = new EmbedBuilder()
         .setColor(color)
-        .setAuthor({
-            name: author.user.tag,
-            url: author.user.avatarURL()
-        })
         .setDescription(`${emoji} ${desc}`);
 
     if (title) {
@@ -75,12 +69,11 @@ const embedUI = (color, emoji, author, title, desc, footer) => {
  * Should be used if the bot doesn't have permission to embed links.
  *
  * @param {EmojiResolvable} emoji The emoji to use in the message.
- * @param {GuildMember|Member} author The author of the embed. Usually the member of a guild.
  * @param {string} title The title of the message.
  * @param {string} desc The description of the message.
  * @returns The constructed message.
  */
-const stringUI = (emoji, author, title, desc) => {
+const stringUI = (emoji, title, desc) => {
     let msgString = `${emoji} ${desc}`;
     if (title) msgString = `${emoji} **${title}**\n${desc}`;
     return msgString;
@@ -124,7 +117,7 @@ class WeebUI {
             no: process.env.EMOJI_NO ?? ':no_entry_sign:'
         };
 
-        const embed = embedUI(embedColor[type], embedEmoji[type], msg.member, title || null, description || null, footer || null);
+        const embed = embedUI(embedColor[type], embedEmoji[type], title || null, description || null, footer || null);
         if (msg instanceof CommandContext) {
             return msg.send({
                 embeds: [embed],
@@ -154,7 +147,7 @@ class WeebUI {
 
             if (!embedPerms) {
                 return msg.reply({
-                    content: stringUI(embedEmoji[type], msg.member, title || null, description || null),
+                    content: stringUI(embedEmoji[type], title || null, description || null),
                     components: buttons || [],
                     ephemeral: ephemeral ?? false,
                     allowedMentions: {
@@ -190,7 +183,7 @@ class WeebUI {
      * @returns {(Message|CommandContext|InteractionResponse)} The message to reply to the user.
      */
     static custom (msg, emoji, color, description, title, footer, ephemeral, buttons, mention) {
-        const embed = embedUI(color, emoji || null, msg.member, title || null, description || null, footer || null);
+        const embed = embedUI(color, emoji || null, title || null, description || null, footer || null);
 
         if (msg instanceof CommandContext) {
             return msg.send({
@@ -306,13 +299,19 @@ class WeebUI {
      * @param {Error} error The error of the bug report.
      * @returns {Message} The overall bug report.
      */
-    static recordError (client, command, title, error) { // TODO: Remove 'type'.
-        const errorChannel = client.channels.cache.get(process.env.BUG_CHANNEL);
-        if (!errorChannel) return;
+    static recordError (client, command, title, error) {
+        if (process.env.BUG_CHANNEL === 'false') return;
+
+        let errorChannel = client.channels.cache.get(process.env.BUG_CHANNEL);
+        if (!errorChannel) errorChannel = client.owner;
 
         const errorContent = `${process.env.EMOJI_WARN || ':warning:'} An error has occured in the application. Please report this to the developer.\n\n**${title}**${command ? ` in \`${command}\`` : ''}\n\`\`\`js\n${error.stack ?? 'N/A'}\`\`\``;
 
-        return errorChannel.send({ content: `${errorContent}` });
+        try {
+            return errorChannel.send({ content: `${errorContent}` });
+        } catch {
+            this.client.logger.warn('Cannot send error report to specified bug channel.');
+        }
     }
 }
 
