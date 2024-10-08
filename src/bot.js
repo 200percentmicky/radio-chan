@@ -105,10 +105,6 @@ class RadioChan extends AkairoClient {
 
         this.defaultGlobalSettings = {
             emitNewSongOnly: true,
-            emptyCooldown: 60,
-            leaveOnStop: true,
-            leaveOnEmpty: true,
-            leaveOnFinish: true,
             streamType: 0,
             emojis: {
                 message: {
@@ -236,7 +232,8 @@ class RadioChan extends AkairoClient {
         this._player = new Player(this, {
             ipconfig: {
                 blocks: process.env.IPV6_BLOCK ? [process.env.IPV6_BLOCK] : []
-            }
+            },
+            skipFFmpeg: this.settings.get('global', 'skipFfmpeg') ?? false
         });
 
         this._player.extractors.loadDefault((ext) => ext !== 'YouTubeExtractor');
