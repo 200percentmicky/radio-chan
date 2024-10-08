@@ -17,15 +17,15 @@
 const { Listener } = require('discord-akairo');
 const { GuildQueueEvent } = require('discord-player');
 
-module.exports = class ListenerQueueDelete extends Listener {
+module.exports = class ListenerPlayerFinish extends Listener {
     constructor () {
-        super('queueDelete', {
+        super('playerFinish', {
             emitter: 'playerEvents',
-            event: GuildQueueEvent.QueueDelete
+            event: GuildQueueEvent.PlayerFinish
         });
     }
 
-    async exec (queue) {
-        await queue.channel.client.utils.setVcStatus(queue.channel, null);
+    async exec (queue, track) {
+        await queue.guild.client.utils.setVcStatus(queue.channel, null);
     }
 };
