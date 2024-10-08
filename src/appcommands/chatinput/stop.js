@@ -64,7 +64,15 @@ class CommandStop extends SlashCommand {
         }
 
         if (vc.members.size <= 2 || dj) {
-            queue.node.stop();
+            // If repeat mode is enabled, for some reason it never truely stops.
+            // I'm unsure if its due to the force option not being applied.
+            // Only stopping playback if leaveOnStop is false.
+            if (!queue.options.leaveOnStop) {
+                queue.node.stop();
+                queue.clear();
+            } else {
+                queue.delete();
+            }
             return this.client.ui.custom(ctx, ':stop_button:', process.env.COLOR_INFO, 'Stopped the player and cleared the queue.');
         } else {
             return this.client.ui.sendPrompt(ctx, 'NOT_ALONE');
