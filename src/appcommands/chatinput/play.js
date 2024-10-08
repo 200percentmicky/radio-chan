@@ -31,7 +31,7 @@ const ffprobe = require('ffprobe');
 const ffprobeStatic = require('ffprobe-static');
 const { toColonNotation } = require('colon-notation');
 const WeebError = require('../../lib/WeebError');
-const { useMainPlayer, useQueue } = require('discord-player');
+const { useMainPlayer } = require('discord-player');
 const PlayerWindow = require('../../lib/PlayerWindow');
 
 class CommandPlay extends SlashCommand {
@@ -195,7 +195,6 @@ class CommandPlay extends SlashCommand {
         }
 
         const player = useMainPlayer();
-        const queue = useQueue(guild.id);
 
         if (ctx.subcommands[0] === 'track' || (ctx.subcommands[0] === 'now' && vc.members.size === 3)) {
             if (this.client.utils.pornPattern(ctx.options.track?.query)) {
@@ -300,18 +299,18 @@ class CommandPlay extends SlashCommand {
                             window.windowTitle(`Added silently to the queue - ${_member.voice.channel.name}`, guild.iconURL({ dynamic: true }));
                         }
 
-                        if (queue && queue.tracks?.toArray().length > 0) {
+                        if (song.track.queue && song.track.queue.tracks?.toArray().length > 0) {
                             window.addFields([{
                                 name: ':bookmark_tabs: Position',
-                                value: `${queue.tracks.toArray().indexOf(song)}` // Assuming the queue was just made.
+                                value: `${song.track.queue.tracks.toArray().indexOf(song.track) + 1}` // Assuming the queue was just made.
                             }]);
                         }
 
-                        if (ctx.subcommands[0] === 'now' && queue) {
+                        if (ctx.subcommands[0] === 'now' && song.track.queue) {
                             try {
-                                if (queue.isPlaying()) {
+                                if (song.track.queue.isPlaying()) {
                                     if (vc.members.size <= 3 || dj) {
-                                        queue.node.skip();
+                                        song.track.queue.node.skip();
                                     } else {
                                         return this.client.ui.sendPrompt(ctx, 'NOT_ALONE');
                                     }
@@ -320,6 +319,9 @@ class CommandPlay extends SlashCommand {
                         }
 
                         return ctx.send({ embeds: [window._embed] });
+                    })
+                    .catch(error => {
+                        return this.client.ui.reply(ctx, 'error', `Error loading track: \`${error}\``);
                     });
             };
 
