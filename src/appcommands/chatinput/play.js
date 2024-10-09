@@ -256,6 +256,11 @@ class CommandPlay extends SlashCommand {
                 */
                 player.play(vc, requested, {
                     nodeOptions: {
+                        metadata: {
+                            ctx,
+                            member: _member,
+                            textChannel: channel
+                        },
                         volume: parseInt(settings.defaultVolume),
                         leaveOnStop: settings.leaveOnStop,
                         leaveOnEnd: settings.leaveOnFinish,
