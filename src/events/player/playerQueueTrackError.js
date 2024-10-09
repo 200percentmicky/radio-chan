@@ -35,11 +35,8 @@ module.exports = class ListenerPlayerQueueTrackError extends Listener {
         const cleanError = error.message
             .split('\n')
             .filter(e => !e.startsWith('    at'))
-            .filter(e => !e.startsWith('[Object] '))
             .filter(e => e !== '')
             .join();
-
-        console.log(cleanError);
 
         // TODO: Add option to allow bot owner to change this number.
         if (queue.totalErrors > 5) {
