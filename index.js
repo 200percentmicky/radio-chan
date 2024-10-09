@@ -63,7 +63,7 @@ if (process.env.SHARDING) {
     try {
         new RadioChan().login(process.env.TOKEN);
     } catch (err) {
-        logger.fatal(`RadioChan failed to start! :(\n${err.stack}`);
+        logger.error(`RadioChan failed to start! :(\n${err.stack}`);
         process.exit(1);
     }
 }

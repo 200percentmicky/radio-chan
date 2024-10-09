@@ -307,7 +307,7 @@ if (process.env.SHARDING) {
     try {
         new RadioChan().login(process.env.TOKEN);
     } catch (err) {
-        logger.fatal(`Radio-chan failed to start! :(\n${err.stack}`);
+        logger.error(`Radio-chan failed to start! :(\n${err.stack}`);
         process.exit(1);
     }
 }

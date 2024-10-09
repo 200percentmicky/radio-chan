@@ -26,7 +26,7 @@ module.exports = class ListenerProcessUnhandledException extends Listener {
 
     async exec (error) {
         this.client.logger.error('Radio-chan has crashed! :(');
-        this.client.logger.fatal(`[process] [FATAL]\n${error.stack}`);
+        this.client.logger.error(`[process] [FATAL]\n${error.stack}`);
         this.client.logger.error('Please report this crash to the developer. Shutting down...');
         this.client.die(1);
     }
